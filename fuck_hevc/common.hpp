@@ -22,16 +22,18 @@
 # define fatal_show     LOG(FATAL)
 # else
 # include <iostream>
-# define detail_show std::cout<<'\n'
-# define dbg_show std::cout<< '\n'
-# define info_show std::cout<< '\n'
-# define wrn_show std::cout<< '\n'
-# define err_show std::cout<< '\n'
-# define fatal_show std::cout<< '\n'
+
+# define detail_show(...)    std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define dbg_show(...)       std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define info_show(...)      std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define wrn_show(...)       std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define err_show(...)       std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define fatal_show(...)     std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+
 # endif
 
 # ifdef _DEBUG
-# define CODE_POS wrn_show << __FUNCTION__ << "[" <<__LINE__ << "]"
+# define CODE_POS wrn_show("")
 # else
 # define CODE_POS
 # endif
@@ -40,7 +42,7 @@
     if(exp__){ dbg_show << __VA_ARGS__; } else{wrn_show<<__VA_ARGS__;}
 
 # define assert_show(exp__, ...) \
-    if(!(exp__)){ err_show<<__VA_ARGS__; }
+    if(!(exp__)){ err_show(__VA_ARGS__); }
 
 # define inL __inline
 

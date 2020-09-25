@@ -5,8 +5,9 @@
     <ClCompile Include="test_bitstream.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="syntax.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="bit_stream.hpp" />
+    <ClInclude Include="BitStream.hpp" />
+    <ClInclude Include="H265_stream.hpp" />
   </ItemGroup>
 </Project>
