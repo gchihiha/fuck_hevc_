@@ -96,27 +96,15 @@ struct name__{ \
     static char const* mean[E::e_max_num]; \
 };
 # define XEnum_def(name__, Xt__) \
-    char const* name__::mean[name__::e_max_num] = {Xt__(X_STR_comma)}; \
+char const* name__::mean[name__::e_max_num] = {Xt__(X_STR_comma)}; \
 
 # define XEnumEx_decl(name__, Xt__, Func_type__) \
-    XEnum_decl(name__##_base, Xt__) \
-    struct name__:public name__##_base{ Func_type__ cb[E::e_max_num]; };
+XEnum_decl(name__##_base, Xt__) \
+struct name__:public name__##_base{ Func_type__ cb[E::e_max_num]; };
 
 
-# define XEnumVf_decl(name__, Xt__, cb_t__) \
-struct name__##_Base{\
-    enum E{ Xt__(X_enum_item_comma) e_max_num };\
-    static char const* mean[e_max_num]; \
-    static cb_t__ cb[e_max_num];\
-};
-
-# define X_name_mean(name__, mean__) #name__ ## ":" ## #mean__,
-
-# define XEnumVf_def(name__, Xt__, cb_t__) \
-char const* name__::mean[name__::e_max_num] = {Xt__(X_name_mean)};\
-cb_t__ name__::cb[name::e_max_num]{nullptr};
-
-
+# define XEnumCb_decl(cb_t__, eName__, name__) static cb_t__ name__[eName__::e_max_num];
+# define XEnumCb_def(cb_t__, eName__, name__) cb_t__ name__[eName__::e_max_num]{nullptr};
 
 
 

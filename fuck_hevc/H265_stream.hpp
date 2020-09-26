@@ -9,15 +9,6 @@
 # include "xtable.hpp"
 
 struct H265_stream:public BitStream {
-
-    struct Test {
-        struct Fuck;
-    };
-    struct Test::Fuck {
-
-    };
-
-
     struct Nal_unit {
         static constexpr size_t nalu_reserve = 8192;
         
@@ -30,7 +21,17 @@ struct H265_stream:public BitStream {
         uint8_t nuh_temporal_id_plus1;
 
         struct Rbsp {
+        public:
             XEnum_decl(Type, Xt_Nal_unit_type);
+            using Cb_new_rbsp = std::unique_ptr<Rbsp>(*)(uint8_t* start_, size_t size_);
+        protected:
+            static Cb_new_rbsp on_new[Type::e_max_num];
+        public:
+            inL static std::unique_ptr<Rbsp> get_new(Type::E type_, uint8_t* start_, size_t size_) {
+                return on_new[type_](start_, size_);
+            }
+
+            Type::E type;
 
             uint8_t* start;
             size_t size;
@@ -39,11 +40,128 @@ struct H265_stream:public BitStream {
                 : start(start_)
                 , size(size_)
             {}
-            virtual void parse() = 0;
         };
-# define X_rbsp_struct_decl(name__) struct Rbsp_##name__;
-        Xt_Nal_unit_type(X_rbsp_struct_decl);
 
+        struct Rbsp_VPS_NUT :public Rbsp {
+            uint8_t vps_video_parameter_set_id   ;
+            uint8_t vps_base_layer_internal_flag ;
+            uint8_t vps_base_layer_available_flag;
+            uint8_t vps_max_layers_minus1        ;
+            uint8_t vps_max_sub_layers_minus1    ;
+            uint8_t vps_temporal_id_nesting_flag ;
+            uint16_t vps_reserved_0xffff_16bits;
+            // profile_tier_level(1, vps_max_sub_layers_minus1); 待办 涉及到数组的可以纯粹使用数组
+            uint8_t vps_sub_layer_ordering_info_present_flag;
+            std::vector<size_t> vps_max_dec_pic_buffering_minus1;
+            std::vector<size_t> vps_max_num_reorder_pics;
+            std::vector<size_t> vps_max_latency_increase_plus1;
+            uint8_t vps_max_layer_id;
+            size_t vps_num_layer_sets_minus1;
+            std::vector<uint8_t> layer_id_included_flag;
+            uint8_t vps_timing_info_present_flag;
+            std::vector<size_t> vps_num_units_in_tick;
+            std::vector<size_t> vps_time_scale;
+            std::vector<size_t> vps_num_ticks_poc_diff_one_minus1;
+            std::vector<size_t> hrd_layer_set_idx;
+            
+
+
+
+            Rbsp_VPS_NUT(uint8_t* start_, size_t size);
+        };
+
+
+        struct Rbsp_TRAIL_N	      :public Rbsp{
+            Rbsp_TRAIL_N(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_TRAIL_R	      :public Rbsp{
+            Rbsp_TRAIL_R(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_TSA_N	      :public Rbsp{
+            Rbsp_TSA_N(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_TSA_R	      :public Rbsp{
+            Rbsp_TSA_R(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_STSA_N	      :public Rbsp{
+            Rbsp_STSA_N(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_STSA_R	      :public Rbsp{
+            Rbsp_STSA_R(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_RADL_N	      :public Rbsp{
+            Rbsp_RADL_N(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_RADL_R	      :public Rbsp{
+            Rbsp_RADL_R(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_RASL_N	      :public Rbsp{
+            Rbsp_RASL_N(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_RASL_R	      :public Rbsp{
+            Rbsp_RASL_R(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_BLA_W_LP	  :public Rbsp{
+            Rbsp_BLA_W_LP(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_BLA_W_RADL	  :public Rbsp{
+            Rbsp_BLA_W_RADL(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_BLA_N_LP	  :public Rbsp{
+            Rbsp_BLA_N_LP(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_IDR_W_RADL	  :public Rbsp{
+            Rbsp_IDR_W_RADL(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_IDR_N_LP	  :public Rbsp{
+            Rbsp_IDR_N_LP(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_CRA_NUT	      :public Rbsp{
+            Rbsp_CRA_NUT(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_SPS_NUT	      :public Rbsp{
+            Rbsp_SPS_NUT(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_PPS_NUT	      :public Rbsp{
+            Rbsp_PPS_NUT(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_AUD_NUT	      :public Rbsp{
+            Rbsp_AUD_NUT(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_EOS_NUT	      :public Rbsp{
+            Rbsp_EOS_NUT(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_EOB_NUT	      :public Rbsp{
+            Rbsp_EOB_NUT(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_FD_NUT	      :public Rbsp{
+            Rbsp_FD_NUT(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_PREFIX_SEI_NUT:public Rbsp{
+            Rbsp_PREFIX_SEI_NUT(uint8_t* start_, size_t size);
+        };
+        struct Rbsp_SUFFIX_SEI_NUT:public Rbsp{
+            Rbsp_SUFFIX_SEI_NUT(uint8_t* start_, size_t size);
+        };
+
+# if 1
+        struct Rbsp_RSV_VCL_N10 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL_R11 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL_N12 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL_R13 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL_N14 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL_R15 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_IRAP_VCL22 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_IRAP_VCL23 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL24 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL25 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL26 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL27 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL28 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL29 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL30 :public Rbsp { using Rbsp::Rbsp; };
+        struct Rbsp_RSV_VCL31 :public Rbsp { using Rbsp::Rbsp; };
+# endif
 
         Nal_unit()
             :forbidden_zero_bit(0)
@@ -151,62 +269,6 @@ struct H265_stream:public BitStream {
             ++curr_ptr;
         }
     }
-
-
-
-    struct video_parameter_set_rbsp {
-        /*
-        video_parameter_set_rbsp( ) {
-            vps_video_parameter_set_id                              u(4)
-            vps_base_layer_internal_flag                            u(1)
-            vps_base_layer_available_flag                           u(1)
-            vps_max_layers_minus1                                   u(6)
-            vps_max_sub_layers_minus1                               u(3)
-            vps_temporal_id_nesting_flag                            u(1)
-            vps_reserved_0xffff_16bits                              u(16)
-            profile_tier_level( 1, vps_max_sub_layers_minus1 )
-            vps_sub_layer_ordering_info_present_flag                u(1)
-            for(i = ( vps_sub_layer_ordering_info_present_flag ? 0 : vps_max_sub_layers_minus1 );
-                i <= vps_max_sub_layers_minus1; 
-                i++ 
-            ) {
-                vps_max_dec_pic_buffering_minus1[ i ]               ue(v)
-                vps_max_num_reorder_pics[ i ]                       ue(v)
-                vps_max_latency_increase_plus1[ i ]                 ue(v)
-            }
-            vps_max_layer_id                                        u(6)
-            vps_num_layer_sets_minus1                               ue(v)
-            for( i = 1; i <= vps_num_layer_sets_minus1; i++ )
-                for( j = 0; j <= vps_max_layer_id; j++ )
-                    layer_id_included_flag[ i ][ j ]                u(1)
-                    vps_timing_info_present_flag                    u(1)
-                    if( vps_timing_info_present_flag ) {
-                    vps_num_units_in_tick                           u(32)
-                    vps_time_scale                                  u(32)
-                    vps_poc_proportional_to_timing_flag             u(1)
-                    if( vps_poc_proportional_to_timing_flag )
-                    vps_num_ticks_poc_diff_one_minus1               ue(v)
-                    vps_num_hrd_parameters                          ue(v)
-                    for( i = 0; i < vps_num_hrd_parameters; i++ ) {
-                        hrd_layer_set_idx[ i ]                      ue(v)
-                        if( i > 0 )
-                        cprms_present_flag[ i ]                     u(1)
-                        hrd_parameters( cprms_present_flag[ i ], vps_max_sub_layers_minus1 )
-                    }
-                }
-            vps_extension_flag                                      u(1)
-            if( vps_extension_flag )
-                while( more_rbsp_data( ) )
-                    vps_extension_data_flag                         u(1)
-            rbsp_trailing_bits( )
-        }
-        */
-    };
-
-
-
-
-
 
 
 
