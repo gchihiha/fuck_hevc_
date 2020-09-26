@@ -12,10 +12,10 @@ struct BitStream {
     size_t size;
 
 protected:
-    constexpr size_t cpu_bit_count() {
+    static constexpr size_t cpu_bit_count() {
         return sizeof(size_t) * 8;
     }
-    constexpr size_t cpu_word_rShift_count() {
+    static constexpr size_t cpu_word_rShift_count_for_bit() {
         switch (sizeof(size_t)) {
         case 1:
             return 3;
@@ -25,11 +25,16 @@ protected:
             return 5;
         case 8:
             return 6;
+        case 16:
+            return 7;
         default:
             return 0;
         }
     }
-    constexpr size_t rBitmask(size_t bit_count) {
+    static constexpr size_t cpu_word_rShift_count_for_byte() {
+        return cpu_word_rShift_count_for_bit() - 3;
+    }
+    static constexpr size_t rBitmask(size_t bit_count) {
         return ((size_t)1 << bit_count) - 1;
     }
 
@@ -41,10 +46,10 @@ protected:
     }
 
     inL size_t word_pos() {
-        return bitPos >> cpu_word_rShift_count();
+        return bitPos >> cpu_word_rShift_count_for_bit();
     }
     inL size_t word_offset() {
-        return bitPos & rBitmask(cpu_word_rShift_count());
+        return bitPos & rBitmask(cpu_word_rShift_count_for_bit());
     }
 
 
@@ -77,6 +82,19 @@ protected:
 # endif
 
 public:
+    /*
+    data_地址应满足cpu对内存地址对齐的要求
+    如果不满足 则data_指向前面对齐的地址
+    并且可访问空间大于等于实际空间+4字节
+    */
+    inL void init(uint8_t* data_, size_t size_) {
+        constexpr size_t mask = rBitmask(cpu_word_rShift_count_for_byte());
+
+        data = (size_t*)((size_t)data_ & ~mask);
+        size = size_;
+        bitPos = ((size_t)data_ & mask) * 8;
+        flush_buf_when_byte_aligned();
+    }
     inL uint8_t* byte_ptr() {
         return ((uint8_t*)data) + byte_pos();
     }
@@ -93,16 +111,13 @@ public:
     }
     inL void flush_buf_when_byte_aligned() {
         assert(byte_aligned());
-        buf = *(size_t*)byte_ptr();
+        buf = reverse(*(size_t*)byte_ptr());
     }
     inL void flush_buf() {
         auto pos = word_pos();
         auto offset = word_offset();
-
-        buf = data[pos];
-        buf = reverse(buf);
-        buf <<= offset;
-        buf |= data[offset + 1] >> (cpu_bit_count() - offset);
+        buf = reverse(data[pos]) << offset;
+        buf |= reverse(data[offset + 1]) >> (cpu_bit_count() - offset);
     }
 
     inL size_t next(size_t c_) {
@@ -148,9 +163,9 @@ public:
             __asm {
                 push REG_A;
                 push REG_B;
-                mov ebx, buf;
-                bsf eax, ebx;
-                mov count, eax;
+                mov REG_B, buf;
+                bsf REG_A, REG_B;
+                mov count, REG_A;
                 pop REG_B;
                 pop REG_A;
             }

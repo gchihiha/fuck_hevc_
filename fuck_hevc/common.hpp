@@ -57,7 +57,6 @@
 # define X_enum_item_comma(name__) e_##name__,
 # define X_STR_comma(name__) #name__,
 
-
 # define DEC_T(name__) \
 struct T_##name__ { \
 enum E_##name__ { \
@@ -102,6 +101,22 @@ struct name__{ \
 # define XEnumEx_decl(name__, Xt__, Func_type__) \
     XEnum_decl(name__##_base, Xt__) \
     struct name__:public name__##_base{ Func_type__ cb[E::e_max_num]; };
+
+
+# define XEnumVf_decl(name__, Xt__, cb_t__) \
+struct name__##_Base{\
+    enum E{ Xt__(X_enum_item_comma) e_max_num };\
+    static char const* mean[e_max_num]; \
+    static cb_t__ cb[e_max_num];\
+};
+
+# define X_name_mean(name__, mean__) #name__ ## ":" ## #mean__,
+
+# define XEnumVf_def(name__, Xt__, cb_t__) \
+char const* name__::mean[name__::e_max_num] = {Xt__(X_name_mean)};\
+cb_t__ name__::cb[name::e_max_num]{nullptr};
+
+
 
 
 
