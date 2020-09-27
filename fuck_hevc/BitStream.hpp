@@ -123,29 +123,43 @@ public:
         volatile auto pos = word_pos();
         volatile uint8_t lOffset = word_offset();
         volatile uint8_t rOffset = cpu_bit_count() - lOffset;
-        buf = data[pos];
-        auto temp = data[pos + 1];
+        auto temp1 = data[pos];
+        auto temp2 = data[pos + 1];
         size_t ret = 0;
-        // bug
         __asm {
-            push REG_A;
-            push REG_B;
-            push REG_C;
-            
-            mov REG_B, buf;
-            mov REG_C, temp;
-            bsf REG_A, REG_B;
-            bsf REG_B, REG_C;
-            mov cl, lOffset;
-            shl REG_A, cl;
-            mov cl, rOffset;
-            shr REG_B, cl;
-            or REG_A, REG_B;
-            mov ret, REG_A;
+            push eax;
+            push ebx;
+            push ecx;
 
-            pop REG_C;
-            pop REG_B;
-            pop REG_A;
+            mov eax, temp1;
+            mov ebx, temp2;
+            bswap eax;
+            bswap ebx;
+
+            xor cx, cx;
+            mov ch, lOffset;
+            xor cl, ch;
+            shr ch, 5;
+            sub cl, ch;
+            shl eax, cl;
+            mov cl, ch;
+            shl eax, cl;
+
+            xor cx, cx;
+            mov ch, rOffset;
+            xor cl, ch;
+            shr ch, 5;
+            sub cl, ch;
+            shr ebx, cl;
+            mov cl, ch;
+            shr ebx, cl;
+
+            or eax, ebx;
+            mov ret, eax;
+
+            pop ecx;
+            pop ebx;
+            pop eax;
         }
         buf = ret;
 
