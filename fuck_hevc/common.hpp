@@ -23,12 +23,12 @@
 # else
 # include <iostream>
 
-# define detail_show(...)    std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
-# define dbg_show(...)       std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
-# define info_show(...)      std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
-# define wrn_show(...)       std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
-# define err_show(...)       std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
-# define fatal_show(...)     std::cout<< __FILE__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define detail_show(...)    std::cout<< __FUNCSIG__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define dbg_show(...)       std::cout<< __FUNCSIG__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define info_show(...)      std::cout<< __FUNCSIG__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define wrn_show(...)       std::cout<< __FUNCSIG__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define err_show(...)       std::cout<< __FUNCSIG__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
+# define fatal_show(...)     std::cout<< __FUNCSIG__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
 
 # endif
 
@@ -98,15 +98,16 @@ struct name__{ \
 # define XEnum_def(name__, Xt__) \
 char const* name__::mean[name__::e_max_num] = {Xt__(X_STR_comma)}; \
 
-# define XEnumEx_decl(name__, Xt__, Func_type__) \
-XEnum_decl(name__##_base, Xt__) \
-struct name__:public name__##_base{ Func_type__ cb[E::e_max_num]; };
-
-
 # define XEnumCb_decl(cb_t__, eName__, name__) static cb_t__ name__[eName__::e_max_num];
 # define XEnumCb_def(cb_t__, eName__, name__) cb_t__ name__[eName__::e_max_num]{nullptr};
 
-
+# define XEnumEx_decl(name__, Xt__, X__) \
+struct name__{ \
+    enum E{ Xt__(X__) e_max_num }; \
+    static char const* mean[E::e_max_num]; \
+};
+# define XEnumEx_def(name__, Xt__, X__) \
+char const* name__::mean[name__::e_max_num] = {Xt__(X__)}; \
 
 # endif
 

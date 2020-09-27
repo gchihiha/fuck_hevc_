@@ -3,6 +3,7 @@
 # include <cstdint>
 # include <cassert>
 # include "common.hpp"
+# include <bitset>
 
 struct BitStream {
 
@@ -61,13 +62,18 @@ protected:
 # define reverse(n__) _byteswap_uint64(n__)
 # define rotr(v__, n__) _lrotr(v__, n__)
 
+    
+
 # elif defined(_WIN32)
 # define REG_A eax
 # define REG_B ebx
+# define REG_C ecx
+
 # define reverse(n__) _byteswap_ulong(n__)
 # define rotr(v__, n__) _rotr(v__, n__)
     static_assert(sizeof(unsigned long) == 4, "sizeof(unsigned long) != 4");
 
+    using uw = uint64_t;
 # endif
 
 # define rzc(ret__, n__) _asm{ bsf REG_A,n__; mov ret__,REG_A; }
@@ -114,10 +120,35 @@ public:
         buf = reverse(*(size_t*)byte_ptr());
     }
     inL void flush_buf() {
-        auto pos = word_pos();
-        auto offset = word_offset();
-        buf = reverse(data[pos]) << offset;
-        buf |= reverse(data[offset + 1]) >> (cpu_bit_count() - offset);
+        volatile auto pos = word_pos();
+        volatile uint8_t lOffset = word_offset();
+        volatile uint8_t rOffset = cpu_bit_count() - lOffset;
+        buf = data[pos];
+        auto temp = data[pos + 1];
+        size_t ret = 0;
+        // bug
+        __asm {
+            push REG_A;
+            push REG_B;
+            push REG_C;
+            
+            mov REG_B, buf;
+            mov REG_C, temp;
+            bsf REG_A, REG_B;
+            bsf REG_B, REG_C;
+            mov cl, lOffset;
+            shl REG_A, cl;
+            mov cl, rOffset;
+            shr REG_B, cl;
+            or REG_A, REG_B;
+            mov ret, REG_A;
+
+            pop REG_C;
+            pop REG_B;
+            pop REG_A;
+        }
+        buf = ret;
+
     }
 
     inL size_t next(size_t c_) {
@@ -183,6 +214,41 @@ public:
     inL size_t se() {
         // 暂时没看懂 手册9.3
         return 0;
+    }
+
+
+    inL bool more_rbsp_data() {
+        /*
+        more_rbsp_data（）的指定如下：
+            –如果原始字节序列有效载荷（RBSP）中没有更多数据，则more_rbsp_data（）的返回值等于FALSE。
+            –否则，将搜索RBSP数据中等于RBSP中存在的最后一位（最低有效，最右边）的位。
+                给定该位的位置，即rbsp_trailing_bits（）语法结构的第一位（rbsp_stop_one_bit），
+                适用以下规则：
+                –如果在rbsp_trailing_bits（）语法结构之前RBSP中还有更多数据 返回TRUE。
+                –否则，返回 FALSE。
+        应用程序（或者在附件B中使用字节流格式的应用程序，在附件B中）指定了用于确定RBSP中是否有更多数据的方法。
+        */
+        if (size * 8 <= bitPos) {
+            return false;
+        }
+        BitStream temp = *this;
+        return temp.rbsp_trailing_bits();
+    }
+
+    inL bool rbsp_trailing_bits() {
+        uint8_t rbsp_stop_one_bit /* equal to 1 */ = f(1);
+        if (rbsp_stop_one_bit != 1) {
+            err_show("rbsp_stop_one_bit not equal to 1");
+            return false;
+        }
+        while (!byte_aligned()) {
+            uint8_t rbsp_alignment_zero_bit /* equal to 0 */ = f(1);
+            if (rbsp_alignment_zero_bit != 0) {
+                err_show("rbsp_alignment_zero_bit not equal to 0 ");
+                return false;
+            }
+        }
+        return true;
     }
 
 };

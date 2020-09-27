@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Element.cpp" />
     <ClCompile Include="H265_stream.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="test_bitstream.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="bit_stream.hpp" />
     <ClInclude Include="BitStream.hpp" />
     <ClInclude Include="common.hpp" />
+    <ClInclude Include="Element.hpp" />
     <ClInclude Include="H265_stream.hpp" />
     <ClInclude Include="xtable.hpp" />
   </ItemGroup>
