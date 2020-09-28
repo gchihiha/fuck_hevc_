@@ -43,7 +43,6 @@ void H265_stream::Nal_unit::parse(){
     //            else
     //                rbsp_byte[NumBytesInRbsp++]
     //    }
-    bs.flush_buf();
     uint8_t* rbsp_start = bs.byte_ptr();
     uint8_t* rbsp_end = rbsp_start;
     for (size_t i = 2; i < NumBytesInNalUnit; ++i) {
@@ -118,7 +117,6 @@ Nal_unit::Rbsp_VPS_NUT          ::Rbsp_VPS_NUT(uint8_t* start_, size_t size)
     vps_max_sub_layers_minus1 = bs.u(3);
     vps_temporal_id_nesting_flag = bs.u(1);
     vps_reserved_0xffff_16bits = bs.u(16);
-    bs.flush_buf();
     profile_tier_level.parse(bs, 1, vps_max_sub_layers_minus1);
     vps_sub_layer_ordering_info_present_flag = bs.u(1);
     for (size_t i = (vps_sub_layer_ordering_info_present_flag ? 0 : vps_max_sub_layers_minus1);

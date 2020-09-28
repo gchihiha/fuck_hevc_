@@ -10,7 +10,7 @@
 using namespace std;
 
 void H265_stream::test() {
-    auto path = "./video-h265.mkv.265";
+    auto path = "./Elecard_about_Tomsk_part2_HEVC_720p.mp4.265";
 
     FILE* pfile;
     pfile = fopen(path, "rb");

@@ -99,10 +99,11 @@ void Profile_tier_level::parse(BitStream& bs, uint8_t profilePresentFlag, size_t
         general_profile_space   = bs.u(2);
         general_tier_flag       = bs.u(1);
         general_profile_idc = bs.u(5);
+        bs.flush_buf();
         for (size_t j = 0; j < 32; ++j) {
-            bs.flush_buf();
             general_profile_compatibility_flag[j] = bs.u(1);
         }
+        bs.flush_buf();
         general_progressive_source_flag     = bs.u(1);
         general_interlaced_source_flag      = bs.u(1);
         general_non_packed_constraint_flag  = bs.u(1);

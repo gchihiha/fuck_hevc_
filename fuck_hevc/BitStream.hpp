@@ -16,25 +16,6 @@ protected:
     static constexpr size_t cpu_bit_count() {
         return sizeof(size_t) * 8;
     }
-    static constexpr size_t cpu_word_rShift_count_for_bit() {
-        switch (sizeof(size_t)) {
-        case 1:
-            return 3;
-        case 2:
-            return 4;
-        case 4:
-            return 5;
-        case 8:
-            return 6;
-        case 16:
-            return 7;
-        default:
-            return 0;
-        }
-    }
-    static constexpr size_t cpu_word_rShift_count_for_byte() {
-        return cpu_word_rShift_count_for_bit() - 3;
-    }
     static constexpr size_t rBitmask(size_t bit_count) {
         return ((size_t)1 << bit_count) - 1;
     }
@@ -43,14 +24,17 @@ protected:
         return bitPos >> 3;
     }
     inL size_t byte_offset() {
-        return bitPos & rBitmask(3);
+        return bitPos & 0x07;
     }
 
     inL size_t word_pos() {
-        return bitPos >> cpu_word_rShift_count_for_bit();
+        return bitPos / (8 * sizeof(size_t));
+    }
+    inL size_t word_offset_mask() {
+        return (8 * sizeof(size_t) - 1);
     }
     inL size_t word_offset() {
-        return bitPos & rBitmask(cpu_word_rShift_count_for_bit());
+        return bitPos & word_offset_mask();
     }
 
 
@@ -94,11 +78,9 @@ public:
     并且可访问空间大于等于实际空间+4字节
     */
     inL void init(uint8_t* data_, size_t size_) {
-        constexpr size_t mask = rBitmask(cpu_word_rShift_count_for_byte());
-
-        data = (size_t*)((size_t)data_ & ~mask);
+        data = (size_t*)((size_t)data_ & ~word_offset_mask());
         size = size_;
-        bitPos = ((size_t)data_ & mask) * 8;
+        bitPos = ((size_t)data_ & word_offset_mask()) * 8;
         flush_buf_when_byte_aligned();
     }
     inL uint8_t* byte_ptr() {
@@ -162,8 +144,15 @@ public:
             pop eax;
         }
         buf = ret;
+    }
+
+    inL size_t word_side_find_byte0(size_t c_) {
 
     }
+    inL size_t find_next_byte0() {
+
+    }
+
 
     inL size_t next(size_t c_) {
         return buf >> (cpu_bit_count() - c_);
