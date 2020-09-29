@@ -24,15 +24,7 @@ void H265_stream::test() {
     length = fread(h265_data.data(), 1, length, pfile);
     fclose(pfile);
 
-    this->parse(h265_data);
-
-
-
-
-
-
-
-
+    H265_stream h265(h265_data);
 }
 
 

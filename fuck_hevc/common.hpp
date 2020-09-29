@@ -30,6 +30,9 @@
 # define err_show(...)       std::cout<< __FUNCSIG__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
 # define fatal_show(...)     std::cout<< __FUNCSIG__ <<" "<<__LINE__<<" "<<__VA_ARGS__<<std::endl
 
+# define asst(condition__, ...) if( (condition__) == false) { __VA_ARGS__; throw -1; }
+# define esst(condition__, ...) else asst(condition__, __VA_ARGS__) 
+
 # endif
 
 # ifdef _DEBUG

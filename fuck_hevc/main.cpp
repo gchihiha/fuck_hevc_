@@ -7,8 +7,7 @@ int main() {
     // 使用Elecard HEVC Analyzer 查看 确认可以
     // 开始参照手册解码.
 
-    H265_stream h265;
-    h265.test();
+    H265_stream::test();
 
     return 0;
 }
