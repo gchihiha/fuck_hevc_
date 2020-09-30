@@ -2,6 +2,7 @@
 # include "Element.hpp"
 # include <memory>
 
+
 H265_stream::H265_stream(std::vector<uint8_t>& data_) {
     //该过程的输入由字节的有序流组成，该有序的字节流由一系列字节流NAL单元语法结构组成。
     //该过程的输出由一系列NAL单元语法结构组成。
@@ -11,7 +12,7 @@ H265_stream::H265_stream(std::vector<uint8_t>& data_) {
     //直到字节流中的当前位置使得该位流中的下四个字节形成四个 字节序列0x00000001。
     //然后，解码器重复执行以下逐步过程，以提取和解码字节流中的每个NAL单元语法结构，
     //直到遇到字节流的末尾（由未指定的方式确定）并且已解码了字节流中的最后一个NAL单元：
-    //1.当位流中的后四个字节形成四字节序列0x00000001时，
+    //1.当位流中的后四个字节形成四字节序列 0x 00 00 00 01时，
     //    将提取并丢弃字节流中的下一个字节（它是zero_byte语法元素），
     //    并将字节流中的当前位置设置为等于该丢弃字节之后的字节位置。
     //2.提取并丢弃字节流中的下一个三字节序列（即start_code_prefix_one_3bytes），
@@ -40,7 +41,7 @@ H265_stream::H265_stream(std::vector<uint8_t>& data_) {
     //            trailing_zero_8bits /* equal to 0x00  f(8)
     //    }
     auto curr_ptr = data_.data();
-    auto size = data_.size();
+    auto end_ptr = curr_ptr+data_.size();
     uint8_t* start = nullptr;
     uint8_t* end = nullptr;
     /*
@@ -73,37 +74,17 @@ H265_stream::H265_stream(std::vector<uint8_t>& data_) {
     0x 00 00 03 03  禁止
     0x 00 00 03 xx  去除03
     */
-    
-    size_t lz = 0 , rz = 0;
-    size_t offset = 0;
 
     // 寻找开头
-    _asm {
-        push eax;
-        push ebx;
-        push ecx;
-        push edx;
-
-        mov ecx, size;
-        mov ebx, 0;
-    START:
-        mov eax, [curr_ptr];
-        bsr eax;
-
-
-        add ebx, 4;
-        LOOPD START;
-
-    END:
-        mov lz, eax;
-        mov rz, edx;
-
-
-        pop edx;
-        pop ecx;
-        pop ebx;
-        pop eax;
+    size_t buf;
+    while (true) {
     }
+
+
+
+
+    info_show(*(size_t*)curr_ptr << ": 左 零:" << lz << " 右 零:" << rz);
+
     // 寻找结尾 同时去除000003并且对禁止的数据进行报错
     // 按size_t拷贝
 
